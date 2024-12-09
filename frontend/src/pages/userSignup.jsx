@@ -1,7 +1,8 @@
 import React from 'react'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios';
+import { userDataContext } from '../context/UserContext'
 const userSignup = () => {
 
     const [email, setEmail] = useState('');
@@ -9,19 +10,32 @@ const userSignup = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
 
-    const [userData, setUserData] = useState({});
+    const navigate = useNavigate();
 
-    const submitHandler = (e) => {
+    const { user, setUser } = React.useContext(userDataContext);
+
+    const submitHandler = async (e) => {
         e.preventDefault();
 
-        setUserData({
-            fullName: {
-                firstName: firstName,
-                lastName: lastName,
+        const newUser = {
+            fullname: {
+                firstname: firstName,
+                lastname: lastName,
             },
             email: email,
             password: password
-        });
+        }
+
+        const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+
+        if (res.status === 201) {
+            const data = res.data;
+
+            setUser(data.user);
+            localStorage.setItem('token', data.token);
+
+            navigate('/home');
+        }
 
         setFirstName('');
         setLastName('');
@@ -74,7 +88,7 @@ const userSignup = () => {
                     className='bg-[#eeeeee] mb-6 rounded px-4 py-2 border w-full text-lg placeholder:text-base' 
                     required 
                 />
-                <button className='bg-[#111] text-white font-semibold mb-5 rounded px-4 py-2 w-full text-lg placeholder:text-sm'>Login</button>
+                <button className='bg-[#111] text-white font-semibold mb-5 rounded px-4 py-2 w-full text-lg placeholder:text-sm'>Create account</button>
 
                 <p className='text-center'>Already have a account? <Link to='/login' className='text-blue-600' >Login here</Link></p>
 
